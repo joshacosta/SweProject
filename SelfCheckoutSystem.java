@@ -1,4 +1,3 @@
-import java.util.Scanner;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 //INTERFACES
@@ -10,35 +9,35 @@ interface CheckOutInterface{
 }
 
 interface CardReaderInterface{
-	void readCardInfo(CardInfo info);
-	
+	//useCard();
+	//readCardInfo();
+	//getPIN();
 }
 
 interface BankInterface{
-	void getPIN(CardInfo card);
+	//verifyCardInfo(); or requestValidation();
 }
 
 interface TimerInterface{
 	//sendRequestToPrintAtMidnight(); x2 ?
-}  
+}
 
 interface CustPrinterInterface{
-	void printReceipt(TransactionLog currentOrder, Subtotal subTotal);
+	//printReceipt();
+	//displayWelcome();
 }
 
 interface ItemScannerInterface{
 	void displayItemDesc(int index);
 	void promptAlcoholCheck();
 	void getSubtotal(Subtotal subTotal);
-	void displayTotalPrice(Subtotal subTotal);
+	void displayTotalPrice();
 }
 
 interface WorkerInterface{
 	//updateInventory();
 	//addNewItem();
 }
-
-
 
 public class SelfCheckoutSystem implements CheckOutInterface{
 	public static void main(String[] args) {
@@ -64,29 +63,23 @@ public class SelfCheckoutSystem implements CheckOutInterface{
 		//Inventory mainInventory = new Inventory (inventory);
 
 
-
-
-		while(true) {
-			System.out.print("Welcome! Enter any key to begin scanning: ");
-			response = kb.next();
-			if(!response.equals("")) {
-				scan.promptScan(inventory);
-			}
-			System.out.println("Returning to welcome screen... (updating inventory)");
-			try {
-				TimeUnit.SECONDS.sleep(5);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		
+		
+		System.out.print("Welcome! Enter any key to begin scanning: ");
+		response = kb.next();
+		if(!response.equals("")) {
+			scan.promptScan(inventory);
 		}
-		
-
 	}
 
-	public void updateInventory(String item) {
-		
-	}
+	//public void updateInventory(String value, int decValue, ArrayList<Item> inventory) {
+		//inventory.remove(value);
+		//printList(inventory);
+	//}
+	
+	//public void printList(ArrayList<Item> inventory) {
+		//Arrays.toString(inventory.toArray());
+	//}
 
 	public void promptScan(ArrayList<Item> inventory) {
 		Checkout mainControl = new Checkout(inventory);
@@ -97,6 +90,12 @@ public class SelfCheckoutSystem implements CheckOutInterface{
 	public void cancel() {
 		CancelCheckOut c = new CancelCheckOut();
 		c.cancel();
+	}
+
+	@Override
+	public void updateInventory(String item) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
@@ -111,13 +110,7 @@ class CardInfo{
 	String expDate;
 	int securityCode;
 	int PIN;
-	
-	public CardInfo(int cardNum, String expDate, int securityCode, int PIN) {
-		this.cardNum = cardNum;
-		this.expDate = expDate;
-		this.securityCode = securityCode;
-		this.PIN = PIN;
-	}
+	int bankAuthNum;
 }
 
 class Item{
@@ -143,6 +136,23 @@ class TransactionLog{
 	Map<String,Integer> AmountSold = new HashMap<String, Integer>();
 	double TotalRevenue = 0.0;
 	
+	public void updateProductInfo(String oldKey, String newKey, int newValue) {
+		if (newValue == 222) {
+			newValue = AmountSold.get(oldKey);
+		}
+		
+		AmountSold.remove(oldKey);
+		AmountSold.put(newKey, newValue);
+		System.out.println(Arrays.asList(AmountSold));
+		
+		//SelfCheckoutSystem scs = new SelfCheckoutSystem();
+		//scs.updateInventory(oldKey, newValue);
+	}
+	
+	public void promptDailyReport() {
+		System.out.println(Arrays.asList(AmountSold));
+	}
+	
 	public TransactionLog() {
 		AmountSold.put("Grapes", 0);
 		AmountSold.put("Beef", 0);
@@ -151,9 +161,18 @@ class TransactionLog{
 		AmountSold.put("Beer", 0);
 	}
 	
+	public void updateProductInfo(String newKey) {
+		AmountSold.remove("Grape");
+		AmountSold.put(newKey, 0);
+	}
+	
 	public void updateOrder(String itemName,double price) {
 		this.TotalRevenue += price;
 		AmountSold.put(itemName, AmountSold.get(itemName)+1);
+		
+	}
+	
+	public void getKeys() {
 		
 	}
 	
@@ -168,7 +187,13 @@ class Inventory{
 	
 }
 
-
+class NewItem{
+	String description;
+	float price;
+	String discountInfo;
+	int quantity; // should also be apart of Item?
+	int inventoryLevel; // ? wut dis meen
+}
 
 class Changes{
 	long targetItemCode;
@@ -192,13 +217,6 @@ class Subtotal{
 	
 	public void updateSubtotal(double price) {
 		this.totalPrice += price;
-		this.tax = this.totalPrice*.0825;
-	}
-	
-	public void getTotal() {
-		double total = this.totalPrice + this.tax;
-		String tot = String.format("%.2f", total);
-		System.out.println("TOTAL: $"+tot);
 	}
 }
 
@@ -212,7 +230,7 @@ class Checkout implements  ItemScannerInterface, CustPrinterInterface{
 	}
 	
 	public void updateInventory(String item) {
-		System.out.println("update");
+		
 	}
 
 	public void scan() {
@@ -225,10 +243,9 @@ class Checkout implements  ItemScannerInterface, CustPrinterInterface{
 			System.out.println("Scan items: \t Actions:\n1) Grapes \t 6) Check subtotal\n2) Beef \t 7) Finish (TOTAL)\n3) Bread \t 8) Cancel \n4) Milk \n5) Beer \t (For employee access, enter code)\n");
 			System.out.print("Choose an action: ");
 			String response = kb.nextLine();
+			System.out.println(currentOrder);	
 			
 			if(response.equals("7")) {
-				displayTotalPrice(subTotal);
-				printReceipt(currentOrder, subTotal);
 				break;
 			}
 			
@@ -266,6 +283,14 @@ class Checkout implements  ItemScannerInterface, CustPrinterInterface{
 					SelfCheckoutSystem c = new SelfCheckoutSystem();
 					c.cancel();
 					break;
+				case "123":
+					ChangeProductInfo cpi = new ChangeProductInfo();
+					cpi.Change();
+					//System.out.println("What is the new name for this item? ");
+					//String newKey = kb.nextLine();
+					//cpi.Change(newKey);
+					//PrintDailyReport pdr = new PrintDailyReport();
+					//pdr.Print();
 					
 			}
 			try {
@@ -274,7 +299,6 @@ class Checkout implements  ItemScannerInterface, CustPrinterInterface{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			updateInventory("yeet");
 		}
 
 		
@@ -302,29 +326,19 @@ class Checkout implements  ItemScannerInterface, CustPrinterInterface{
 
 	@Override
 	public void promptAlcoholCheck() {
-		ContainsAlcohol check = new ContainsAlcohol();
-		check.check(this.inventory.get(4).containsAlcohol);
-	}
-
-
-	@Override
-	public void displayTotalPrice(Subtotal subTotal) {
-		subTotal.getTotal();
-		PaymentMethod pay = new PaymentMethod(subTotal);
-	}
-
-	@Override
-	public void printReceipt(TransactionLog currentOrder, Subtotal subTotal) {
-		CardInfo info = new CardInfo(123456789, "01/22", 123, 1234); //card information
-
-		subTotal.getSubtotal();
-		subTotal.getTotal();
-
-		
+		if(this.inventory.get(4).containsAlcohol) {
+			System.out.println("Are you 21?... It seems you check out.");
+			System.out.println("-Cashier enters confirmation code-");
+		}
 		
 	}
 
 
+	@Override
+	public void displayTotalPrice() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }
 
@@ -333,18 +347,23 @@ class Restock{
 }
 
 class ChangeProductInfo{
-	
+	Scanner kb = new Scanner(System.in);
+	public void Change() {
+		TransactionLog completeLog = new TransactionLog();
+		System.out.print("Which product would you like to change? ");
+		String oldKey = kb.nextLine();
+		System.out.print("Replace it with what? ");
+		String newKey = kb.nextLine();
+		System.out.print("New value for above key?(if you dont want to change it put 222) ");
+		int newValue = kb.nextInt();
+		completeLog.updateProductInfo(oldKey, newKey, newValue);
+	}
 }
 
 //BUSINESS LOGICS
 
 class ContainsAlcohol{
-	public void check(Boolean hasAlcohol) {
-		if(hasAlcohol) {
-			System.out.println("Are you 21?... It seems you check out.");
-			System.out.println("-Cashier enters confirmation code-");
-		}
-	}
+	
 }
 
 class CancelCheckOut{
@@ -355,160 +374,34 @@ class CancelCheckOut{
 	
 }
 
-class PaymentMethod  {
+class PaymentMethod{
 	
-	
-	public PaymentMethod(Subtotal subTotal) {
-		Scanner kb = new Scanner(System.in);
-		System.out.println("How would you like to pay? \n1) Cash\n2) Card");
-		System.out.print("Choose: ");
-		String response = kb.next();
-		
-		if(response.equals("2")) {
-			promptReadCardInfo();
-		}else if(response.equals("1")) {
-			promptReadCash(subTotal);
-		}
-		
-	}
-
-	
-	public void promptReadCardInfo() {
-		PayByCard card  = new PayByCard();
-		System.out.println("Signing receipt...");
-		System.out.println("\nYour receipt:\n");
-		CardInfo info = new CardInfo(123456789, "01/22", 123, 1234);
-		System.out.println("Card Number: " + info.cardNum%10000 +"\nAuthorization: 98764321");
-	}
-	public void promptReadCash(Subtotal subTotal){
-		PayByCash cash = new PayByCash(subTotal);
-		System.out.println("\nYour receipt:\n");
-		//print receipt
-	}
-
 }
 
 //APPLICATION LOGICS
 
-class PayByCard implements CardReaderInterface, BankInterface{
-	public PayByCard() {
-		System.out.println("-Card is entered...-");
-		try {
-			TimeUnit.SECONDS.sleep(2);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Boolean isCardValid = true; //we shall assume this for sake of flow of program
-		CardInfo info = new CardInfo(123456789, "01/22", 123, 1234); //card information is read
-		if(isCardValid) {
-			readCardInfo(info);//card is read
-			getPIN(info);
-		}
-		else {
-			System.out.println("Card not accepted... cancelling order");
-			System.exit(0);
-		}
-		
-		
-		
-		
-	}
-
-	@Override
-	public void readCardInfo(CardInfo info) {
-		if(info.cardNum > 0) { //this assumed rule for specific customer card
-			System.out.println("Card has been read...");
-		}
-		
-	}
-
-	@Override
-	public void getPIN(CardInfo info) {
-		Scanner kb = new Scanner(System.in);
-		System.out.print("Please enter your four digit PIN number...\t (hint: its 1234): "); //assume customer knows their PIN so disregard the "hint"
-		int PIN = kb.nextInt();
-		
-		AuthorizationCenter auth = new AuthorizationCenter(PIN);
-		if(auth.requestValidation()) {
-			auth.getAuthNum();
-		}
-		
-	}
-
-	
+class PayByCard{
 	
 }
 
 class PayByCash{
-
-	public PayByCash(Subtotal subTotal) {
-		Scanner kb = new Scanner(System.in);
-		System.out.print("Press any key to enter your cash: ");
-		String res = kb.next();
-		if(!res.equals("")) {
-			System.out.print("How much cash will you be entering?: ");
-			double cash = kb.nextDouble();
-			CheckCash checkCash = new CheckCash(subTotal, cash);
-			if(checkCash.check()) {
-				double change = cash - subTotal.totalPrice;
-				System.out.println("Cash has been received.\nYou are receiving $" + change + " in change...");
-			}else {
-				System.out.println("You didn't enter enough cash... cancelling order.");
-				System.exit(0);
-			}
-		}
-	}
+	
 }
 
 class AuthorizationCenter{
-	int PIN;
 	
-	public AuthorizationCenter(int PIN) {
-		this.PIN = PIN;
-	}
-	
-	public boolean requestValidation() {
-		if(this.PIN == 1234) {
-			return true;
-		}else {
-			return false;
-		}
-	}
-	
-	public void getAuthNum() {
-		System.out.println("Your card has been accepted.\nYour authorization number is 987654321.");
-		try {
-			TimeUnit.SECONDS.sleep(2);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
 }
 
 class CheckCash{
-	Subtotal subTotal;
-	double cash;
 	
-	public CheckCash(Subtotal subTotal, double cash) {
-		this.subTotal = subTotal;
-		this.cash = cash;
-	}
-	
-	public boolean check() {
-		if(this.subTotal.totalPrice - this.cash <0) {
-			return true;
-		}
-		else
-			return false;
-	}
 }
 
-class PrintDailyReport{
-	
-}
+//class PrintDailyReport{
+	//public void Print() {
+		//TransactionLog currentLog = new TransactionLog();
+		//currentLog.change();
+	//}
+//}
 
 
 class PrintInventory{
